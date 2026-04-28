@@ -1,5 +1,6 @@
 # Sponsorship Bridge
 
+[![SafeSkill 92/100](https://img.shields.io/badge/SafeSkill-92%2F100_Verified%20Safe-brightgreen)](https://safeskill.dev/scan/mabelhsu-sponsorship-bridge-public)
 > A multi-agent AI system that matches **YouTube creators with brand sponsors** — discovers, scores, drafts the outreach, and books the intro call. Built on **Google ADK + Gemini 2.5 Flash + MCP**, deployed on **Cloud Run**.
 
 Built for **Gen AI Academy APAC 2026 — Cohort 1 Hackathon**.
