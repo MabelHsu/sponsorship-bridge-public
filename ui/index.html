@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sponsorship Bridge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;0,6..72,800;1,6..72,500;1,6..72,600&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="lockup">
+      <div class="mark">B</div>
+      <div>
+        <div class="wordmark">Sponsorship <em>Bridge</em></div>
+      </div>
+      <div class="kicker">Gen AI Academy · APAC 2026</div>
+    </div>
+    <div class="seg" role="tablist" aria-label="Mode">
+      <span class="slide" aria-hidden="true"></span>
+      <button id="brandTab" class="active" type="button">For brands</button>
+      <button id="creatorTab" type="button">For creators</button>
+    </div>
+  </nav>
+
+  <main class="col">
+    <section class="brief">
+      <div class="brief-eyebrow">
+        <span class="num">01</span>
+        <span class="dot"></span>
+        <span id="briefKicker">The brief</span>
+      </div>
+      <h1 id="briefHeadline">Describe the campaign. <em>We'll find the creator.</em></h1>
+      <p class="brief-sub" id="briefSub">A deterministic scoring engine and a live multi-agent crew assemble your
+        shortlist, media kit, and introduction call.</p>
+
+      <div class="fieldset">
+        <div class="field">
+          <label id="nameLabel" for="nameInput">Brand name</label>
+          <input id="nameInput" value="EcoGlow Skincare">
+        </div>
+        <div class="field">
+          <label id="briefLabel" for="briefInput">Campaign brief</label>
+          <textarea
+            id="briefInput">Eco-friendly skincare targeting women 18-35 in the US. Looking for creators in skincare, clean beauty, vegan beauty, or sustainable lifestyle.</textarea>
+        </div>
+      </div>
+
+      <div class="brief-footer">
+        <div class="scenarios" id="scenarios"></div>
+        <div class="cta-row">
+          <button class="cta ghost" id="previewBtn" type="button">Quick preview</button>
+          <button class="cta" id="matchBtn" type="button">
+            <span id="matchBtnLabel">Find my match</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="status" id="status"></div>
+    </section>
+
+    <div class="rule" id="resultsRule"><span class="num">02</span> The shortlist</div>
+
+    <section id="results">
+      <div class="empty">
+        <div class="empty-art">
+          <div class="portrait b">B</div>
+          <div class="tie"></div>
+          <div class="portrait">C</div>
+        </div>
+        <h2>Two sides, <em>one good match.</em></h2>
+        <p>Complete the brief, then press <strong>Find my match</strong>. A multi-agent crew searches YouTube, scores
+          every candidate on eight deterministic signals, and stitches the full dossier together.</p>
+      </div>
+    </section>
+
+    <section id="kit"></section>
+
+    <button id="brandsBtn" type="button" style="display:none"></button>
+
+    <footer class="methodology">
+      <strong>Methodology</strong>
+      Scores are computed deterministically in code across eight weighted signals — engagement rate, audience size,
+      topical relevance, geography, activity, channel maturity, recency, and quality. No arithmetic is delegated to the
+      language model; the agent handles research, tie-breaks, and presentation. Every recommendation cites real YouTube
+      data.
+    </footer>
+
+    <div class="modal-backdrop hidden" id="schedModal" role="dialog" aria-modal="true" aria-labelledby="schedTitle">
+      <div class="modal" role="document">
+        <div class="m-eyebrow">Schedule · Google Calendar</div>
+        <h3 id="schedTitle">Book an <em>intro call</em></h3>
+        <p class="m-sub">The scheduling agent finds a slot, creates the event, and returns a Google Meet link.</p>
+        <div class="m-grid">
+          <div class="m-field">
+            <label for="schedDate">Date</label>
+            <input type="date" id="schedDate">
+          </div>
+          <div class="m-field">
+            <label for="schedTime">Time</label>
+            <input type="time" id="schedTime" value="10:00">
+          </div>
+          <div class="m-field">
+            <label for="schedDuration">Duration (min)</label>
+            <input type="number" id="schedDuration" value="60" min="15" step="15">
+          </div>
+          <div class="m-field">
+            <label for="schedTimezone">Timezone</label>
+            <input type="text" id="schedTimezone" value="Asia/Singapore">
+          </div>
+        </div>
+        <div class="m-preview" id="schedPreview">Schedule an intro call with ...</div>
+        <div class="m-actions">
+          <button type="button" id="schedCancel">Cancel</button>
+          <button type="button" class="primary" id="schedConfirm">Confirm &amp; schedule</button>
+        </div>
+      </div>
+    </div>
+
+  
+    <div class="modal-backdrop hidden" id="outreachModal" role="dialog" aria-modal="true" aria-labelledby="outreachTitle">
+      <div class="modal" role="document" style="max-width:560px">
+        <div class="m-eyebrow">Outreach · Personalized draft</div>
+        <h3 id="outreachTitle">A draft for <em><span id="outreachWho">your top match</span></em></h3>
+        <p class="m-sub">Generated by an outreach sub-agent. Copy the message and send it through whichever channel you use to reach creators (channel About page, business inquiry form, agency rep). YouTube does not expose creator emails.</p>
+        <div id="outreachStatus" class="status active" style="margin-top:8px;">Drafting...</div>
+        <textarea id="outreachText" style="width:100%;min-height:200px;border:1px solid var(--hair);border-radius:2px;padding:14px 16px;font-family:Newsreader,Georgia,serif;font-size:14.5px;line-height:1.6;color:var(--ink);background:var(--paper-2);outline:none;resize:vertical;margin-top:14px;display:none;"></textarea>
+        <div class="m-actions" style="margin-top:18px;">
+          <button type="button" id="outreachClose">Close</button>
+          <button type="button" class="primary" id="outreachCopy" disabled>Copy to clipboard</button>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="script.js"></script>
+</body>
+
+</html>

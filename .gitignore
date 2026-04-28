@@ -1,0 +1,38 @@
+﻿# ============================================================
+# Sponsorship Bridge - Public submission .gitignore
+# ============================================================
+
+# Environment and secrets - NEVER commit
+.env
+sponsorship_bridge/.env
+*.key
+*.pem
+service-account*.json
+credentials.json
+token.json
+
+# SQLite databases (regenerated at container startup)
+sponsorship.db
+backend/sponsorship.db
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+build/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db

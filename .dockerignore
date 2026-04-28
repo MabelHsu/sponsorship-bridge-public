@@ -1,0 +1,10 @@
+venv/
+.venv/
+__pycache__/
+.git/
+.gitignore
+*.db
+token.json
+credentials.json
+.env
+.adk/
