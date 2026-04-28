@@ -17,6 +17,51 @@ The whole loop — discover, score, match, draft outreach, schedule — runs in 
 
 ---
 
+## What's new in Phase 2
+
+Phase 1 proved the multi-agent matching workflow works. Phase 2 made it
+production-shaped, transparent, and end-to-end.
+
+### Product
+
+- **Personalized Outreach Drafter (new)** — One-click AI-drafted DM via Vertex Gemini
+  for the top match (or any of the top 3). Mode-aware: brand-to-creator pitch in
+  brand mode, creator-to-brand pitch in creator mode. References a specific recent
+  video for authenticity. Copy-to-clipboard for the user to send through whichever
+  channel they actually use to reach creators.
+- **Iterative Refinement Loop (new)** — After initial results, the user can add a
+  one-line constraint ("EU-based only", "exclude Shorts-heavy", "prefer micro-creators
+  under 100K") and re-run. Mode-aware suggestion chips. The agent detects
+  contradictory refinements and warns the user before re-running.
+- **Schedule modal with date/time picker** — Replaces the previous text-only
+  scheduling prompt. Date, time, duration, and timezone fields. Triggers the live
+  scheduling agent and produces a real Google Meet link in real-calendar mode.
+- **10 brand campaigns with brand-voice descriptions** (was 5) — Spanning Beauty,
+  Tech, Fitness, Travel, Home, Food & Beverage, Gaming, Finance, Pets. Each row
+  carries a marketing-voice description that drives the creator-mode dossier copy.
+
+### Transparency
+
+- **Editorial dossier UI** — Custom HTML/CSS/JS rebuild. Newsreader serif + Inter
+  + JetBrains Mono. Two-panel match view with a central seam fit numeral.
+- **Visible signal ribbon** — Every match's 8 scoring components (engagement 25,
+  audience 25, relevance 20, geography 10, activity 5, maturity 5, recency 5,
+  quality 5) are rendered as proportionally-sized colored bands the user can see
+  at a glance. No more black-box scoring.
+- **Live agent trace panel** — The pipeline of tool calls (search, score, save,
+  draft, schedule) shows up in the UI alongside the result, collapsible so it
+  doesn't compete with the matches.
+
+### Quality
+
+- **10-case golden eval harness** at `tests/eval_scoring.py` — Locks in scoring
+  behavior across signal-weight changes. Cases cover same-niche match, cross-niche
+  mismatch, geography hit/miss, synonym expansion, sub-1K subscriber gating,
+  inactive channels, Shorts-heavy patterns, perfect-fit, engagement-only outliers.
+  Pytest-style runner, exits 0 on pass, 1 on fail. CI-ready.
+
+---
+
 ## Why this is built this way
 
 The hackathon brief asks for a multi-agent AI system that helps users manage tasks, schedules, and information across multiple tools and data sources. Sponsorship Bridge addresses each pillar:
