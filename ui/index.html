@@ -22,10 +22,16 @@
       </div>
       <div class="kicker">Gen AI Academy · APAC 2026</div>
     </div>
-    <div class="seg" role="tablist" aria-label="Mode">
-      <span class="slide" aria-hidden="true"></span>
-      <button id="brandTab" class="active" type="button">For brands</button>
-      <button id="creatorTab" type="button">For creators</button>
+    <div class="nav-actions">
+      <div class="seg" role="tablist" aria-label="Mode">
+        <span class="slide" aria-hidden="true"></span>
+        <button id="brandTab" class="active" type="button">For brands</button>
+        <button id="creatorTab" type="button">For creators</button>
+      </div>
+      <button id="dossierBtn" type="button" class="dossier-toggle">
+        <span class="label">Dossier</span>
+        <span id="dossierCount" class="count">0</span>
+      </button>
     </div>
   </nav>
 
@@ -142,6 +148,46 @@
       </div>
     </div>
   </main>
+
+  <aside id="dossierDrawer" class="drawer hidden">
+    <div class="drawer-header">
+      <div class="d-eyebrow">Inventory</div>
+      <h2>Your <em>Dossier</em></h2>
+      <button id="closeDossier" class="close-btn">&times;</button>
+    </div>
+    
+    <div class="drawer-content">
+      <div id="dossierItems" class="dossier-items">
+        <div class="empty-dossier">Your dossier is empty. Add creators or brands to get started.</div>
+      </div>
+      
+      <div class="drawer-footer">
+        <div class="d-eyebrow">Custom Prompt</div>
+        <p class="d-sub">Get a tailored response based on your selected items.</p>
+        <textarea id="customPromptInput" placeholder="e.g. Draft an outreach email for these creators..."></textarea>
+        <div class="d-actions">
+          <button id="generatePromptBtn" class="cta full">Generate Prompt</button>
+        </div>
+        <div id="promptResult" class="prompt-result hidden"></div>
+      </div>
+    </div>
+  </aside>
+  <aside id="dossierResultPanel" class="drawer-result hidden">
+    <div class="drawer-header">
+      <div class="d-eyebrow">Generation</div>
+      <h2>AI <em>Response</em></h2>
+      <button id="closeResultPanel" class="close-btn">&times;</button>
+    </div>
+    <div class="drawer-content">
+      <div id="dossierResultText" class="result-text"></div>
+      <div class="drawer-footer" style="padding: 24px 34px;">
+        <button id="copyResultBtn" class="cta full">Copy Response</button>
+      </div>
+    </div>
+  </aside>
+
+  <div id="drawerBackdrop" class="drawer-backdrop hidden"></div>
+
   <script src="script.js"></script>
 </body>
 

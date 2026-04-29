@@ -234,6 +234,18 @@ DEMO_CREATOR_PROFILE = CreatorInput(
 def _ensure_db() -> None:
     if not os.path.exists(DB_NAME):
         init_db()
+    with sqlite3.connect(DB_NAME) as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS session_dossier (
+                session_id TEXT,
+                item_type TEXT,
+                item_id TEXT,
+                name TEXT,
+                data TEXT,
+                PRIMARY KEY (session_id, item_type, item_id)
+            )
+        """)
+        conn.commit()
 
 
 def _creator_from_dict(data: dict[str, Any]) -> CreatorInput:
@@ -799,10 +811,11 @@ Return ONLY the message text. No preamble, no explanations, no quotes around it.
             )
         else:
             from google import genai
-            client = genai.Client(api_key=os.environ.get("GOOGLE_API_KEY", ""))
+            api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY", "")
+            client = genai.Client(api_key=api_key)
 
         response = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-2.0-flash",
             contents=prompt,
         )
         draft = (response.text or "").strip()
@@ -810,13 +823,139 @@ Return ONLY the message text. No preamble, no explanations, no quotes around it.
         if (draft.startswith('"') and draft.endswith('"')) or (draft.startswith('"') and draft.endswith('"')):
             draft = draft[1:-1].strip()
     except Exception as exc:
-        return {"error": "Outreach draft failed", "detail": str(exc), "draft": ""}
+        print(f"ERROR in outreach_draft_payload: {exc}")
+        return {"error": f"Outreach draft failed: {str(exc)}", "draft": ""}
 
     return {
         "brand_name": brand_name,
         "creator_name": creator_name,
         "draft": draft,
     }
+
+
+def get_dossier_payload(data: dict[str, Any]) -> dict[str, Any]:
+    session_id = data.get("session_id", "default")
+    _ensure_db()
+    with sqlite3.connect(DB_NAME) as conn:
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT item_type, item_id, name, data FROM session_dossier WHERE session_id = ?",
+            (session_id,)
+        ).fetchall()
+    
+    items = []
+    for r in rows:
+        items.append({
+            "type": r["item_type"],
+            "id": r["item_id"],
+            "name": r["name"],
+            "data": json.loads(r["data"]) if r["data"] else {}
+        })
+    return {"items": items}
+
+
+def add_dossier_payload(data: dict[str, Any]) -> dict[str, Any]:
+    session_id = data.get("session_id", "default")
+    item_type = data.get("type")
+    item_id = data.get("id")
+    name = data.get("name")
+    item_data = data.get("data")
+    
+    if not all([item_type, item_id, name]):
+        return {"error": "Missing item info"}
+        
+    _ensure_db()
+    with sqlite3.connect(DB_NAME) as conn:
+        conn.execute(
+            "INSERT OR REPLACE INTO session_dossier (session_id, item_type, item_id, name, data) "
+            "VALUES (?, ?, ?, ?, ?)",
+            (session_id, item_type, item_id, name, json.dumps(item_data))
+        )
+        conn.commit()
+    return {"status": "ok"}
+
+
+def remove_dossier_payload(data: dict[str, Any]) -> dict[str, Any]:
+    session_id = data.get("session_id", "default")
+    item_type = data.get("type")
+    item_id = data.get("id")
+    clear_all = data.get("clear_all", False)
+    
+    _ensure_db()
+    with sqlite3.connect(DB_NAME) as conn:
+        if clear_all:
+            conn.execute("DELETE FROM session_dossier WHERE session_id = ?", (session_id,))
+        else:
+            conn.execute(
+                "DELETE FROM session_dossier WHERE session_id = ? AND item_type = ? AND item_id = ?",
+                (session_id, item_type, item_id)
+            )
+        conn.commit()
+    return {"status": "ok"}
+
+
+def custom_prompt_payload(data: dict[str, Any]) -> dict[str, Any]:
+    instruction = data.get("instruction", "").strip()
+    session_id = data.get("session_id", "default")
+    
+    if not instruction:
+        return {"error": "Instruction is required"}
+        
+    dossier = get_dossier_payload({"session_id": session_id})
+    items = dossier.get("items", [])
+    
+    if not items:
+        return {"error": "Dossier is empty. Add some creators or brands first."}
+        
+    context_parts = []
+    for item in items:
+        context_parts.append(f"- {item['type'].capitalize()}: {item['name']}")
+    context_str = "\n".join(context_parts)
+    
+    prompt = f"""You are an expert sponsorship consultant helping a user with their workflow.
+The user has selected the following creators and brands in their "Dossier":
+{context_str}
+
+The user's instruction is: "{instruction}"
+
+Please provide a helpful, professional, and tailored response based on these selections. 
+If the user asks for a draft, provide a high-quality draft.
+If they ask for advice, give strategic advice.
+If they ask for a campaign idea, be creative.
+
+Requirements:
+- Use the Newsreader font style (premium, editorial).
+- Be concise but thorough.
+- Do not use markdown headers, use bold text instead.
+- Return ONLY the response text.
+"""
+
+    try:
+        _load_local_env()
+        if os.environ.get("GOOGLE_GENAI_USE_VERTEXAI", "").upper() == "TRUE":
+            os.environ.pop("GOOGLE_API_KEY", None)
+            os.environ.pop("GEMINI_API_KEY", None)
+            from google import genai
+            client = genai.Client(
+                vertexai=True,
+                project=os.environ.get("GOOGLE_CLOUD_PROJECT"),
+                location=os.environ.get("GOOGLE_CLOUD_LOCATION", "europe-west1"),
+            )
+        else:
+            from google import genai
+            api_key = os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY", "")
+            client = genai.Client(api_key=api_key)
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+        )
+        result = (response.text or "").strip()
+    except Exception as exc:
+        print(f"ERROR in custom_prompt_payload: {exc}")
+        return {"error": f"Custom prompt generation failed: {str(exc)}"}
+        
+    return {"result": result}
 
 
 def brands_payload() -> dict[str, str]:
@@ -1043,6 +1182,22 @@ if FASTAPI_AVAILABLE:
     def outreach_draft(req: dict[str, Any]) -> dict[str, Any]:
         return outreach_draft_payload(req)
 
+    @app.get("/api/dossier")
+    def get_dossier(session_id: str = "default") -> dict[str, Any]:
+        return get_dossier_payload({"session_id": session_id})
+
+    @app.post("/api/dossier")
+    def add_dossier(req: dict[str, Any]) -> dict[str, Any]:
+        return add_dossier_payload(req)
+
+    @app.delete("/api/dossier")
+    def remove_dossier(req: dict[str, Any]) -> dict[str, Any]:
+        return remove_dossier_payload(req)
+
+    @app.post("/api/custom-prompt")
+    def custom_prompt(req: dict[str, Any]) -> dict[str, Any]:
+        return custom_prompt_payload(req)
+
     if UI_DIR.exists():
         app.mount("/ui", StaticFiles(directory=str(UI_DIR)), name="ui")
 
@@ -1081,6 +1236,12 @@ class BasicHandler(BaseHTTPRequestHandler):
         if self.path == "/api/brands":
             self._send_json(brands_payload())
             return
+        if self.path.startswith("/api/dossier"):
+            from urllib.parse import parse_qs, urlparse
+            qs = parse_qs(urlparse(self.path).query)
+            session_id = qs.get("session_id", ["default"])[0]
+            self._send_json(get_dossier_payload({"session_id": session_id}))
+            return
         if self.path in {"/", "/index.html", "/ui/index.html"}:
             path = UI_DIR / "index.html"
         else:
@@ -1106,7 +1267,7 @@ class BasicHandler(BaseHTTPRequestHandler):
         self.send_error(404)
 
     def do_POST(self) -> None:
-        if self.path not in {"/api/score", "/api/creator-match", "/api/agent-run", "/api/outreach-draft"}:
+        if self.path not in {"/api/score", "/api/creator-match", "/api/agent-run", "/api/outreach-draft", "/api/dossier", "/api/custom-prompt"}:
             self.send_error(404)
             return
         length = int(self.headers.get("Content-Length", "0") or 0)
@@ -1122,8 +1283,25 @@ class BasicHandler(BaseHTTPRequestHandler):
             self._send_json(creator_match_payload(data))
         elif self.path == "/api/outreach-draft":
             self._send_json(outreach_draft_payload(data))
+        elif self.path == "/api/dossier":
+            self._send_json(add_dossier_payload(data))
+        elif self.path == "/api/custom-prompt":
+            self._send_json(custom_prompt_payload(data))
         else:
             self._send_json(score_payload(data))
+
+    def do_DELETE(self) -> None:
+        if self.path != "/api/dossier":
+            self.send_error(404)
+            return
+        length = int(self.headers.get("Content-Length", "0") or 0)
+        raw = self.rfile.read(length).decode("utf-8")
+        try:
+            data = json.loads(raw or "{}")
+        except json.JSONDecodeError:
+            self._send_json({"error": "Invalid JSON"}, status=400)
+            return
+        self._send_json(remove_dossier_payload(data))
 
 
 def main() -> None:

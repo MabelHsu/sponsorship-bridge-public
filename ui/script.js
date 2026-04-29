@@ -9,7 +9,7 @@ const scenarios = {
         { label: "Sustainable home", name: "GreenHome Co.", brief: "Launching sustainable home products for eco-conscious adults 25-45. Zero-waste living, home organization, sustainable swaps, minimalist lifestyle." },
     ],
     creator: [
-        { label: "Sustainable lifestyle", name: "Mabel's Eco Creator", brief: "YouTube creator, 149K subscribers. Sustainable living, zero-waste, eco home, thrifting, vegan lifestyle. Audience likes practical product swaps and realistic routines." },
+        { label: "Sustainable lifestyle", name: "Gittemary Johansen Eco creator", brief: "I'm a creator. My channel https://www.youtube.com/channel/UCFQ_CWYmt-ScWaPX4YfnBrQ covers sustainable living and zero-waste lifestyle. What brands in your database would be a good match for me?" },
         { label: "Skincare creator", name: "NaturalSkinVlog", brief: "Skincare YouTube creator, 95K subscribers. Natural skincare, sensitive skin, ingredient education, gentle wellness, US audience." },
         { label: "Productivity tech", name: "DeskFlow Reviews", brief: "Tech and productivity creator, 120K subscribers. Desk setups, productivity software, keyboards, gadgets, remote-work tools." },
     ],
@@ -40,6 +40,7 @@ const ARROW = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" strok
 const EXT = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>';
 const MAIL = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>';
 const CAL = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>';
+const PLUS = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
 
 function initialsFor(name) {
     const parts = String(name || "").trim().split(/\s+/);
@@ -133,6 +134,7 @@ function renderCreatorShortlist(matches, brandName, brandBrief) {
         <a class="primary" href="${chUrl(top)}" target="_blank" rel="noreferrer">${EXT}Open channel</a>
         <a href="#" data-sched-creator="${esc(top.creator_name)}">${CAL}Schedule intro call</a>
         <a href="#" data-outreach-creator="${esc(top.creator_name)}" data-outreach-topics="${esc(top.content_topics||"")}" data-outreach-titles="${esc((top.recent_videos||[]).slice(0,5).map(v=>v.title).join(", "))}" data-outreach-reasoning="${esc(top.reasoning||"")}">${MAIL}Draft outreach</a>
+        <a href="#" data-add-dossier="${esc(JSON.stringify({type:'creator', id:top.channel_id, name:top.creator_name, data:top}))}">${PLUS}Add to Dossier</a>
       </div>
     </article>`;
 
@@ -149,9 +151,10 @@ function renderCreatorShortlist(matches, brandName, brandBrief) {
         ${ribbonHtml(m.score_components, { mini: true })}
         ${(m.recent_videos && m.recent_videos.length) ? `<div class="refs" style="grid-template-columns:1fr;padding:14px 0 0;border-top:1px solid var(--hair-2);margin-top:14px;"><div class="refs-list">${m.recent_videos.slice(0,3).map((v,k)=>`<a href="${v.url}" target="_blank" rel="noreferrer"><span>${esc(v.title||("Recent video "+(k+1)))}</span><span class="ext">youtube.com</span></a>`).join("")}</div></div>` : ""}
         <div class="hero-actions" style="margin-top:14px">
-          <a class="a-ghost" href="${ch2}" target="_blank" rel="noreferrer">${EXT}Channel</a>
-          <a class="a-ghost" href="#" data-sched-creator="${esc(m.creator_name)}">${CAL}Schedule</a>
-          <a class="a-ghost" href="#" data-outreach-creator="${esc(m.creator_name)}" data-outreach-topics="${esc(m.content_topics||"")}" data-outreach-titles="${esc((m.recent_videos||[]).slice(0,5).map(v=>v.title).join(", "))}" data-outreach-reasoning="${esc(m.reasoning||"")}">${MAIL}Outreach</a>
+          <a class="cta ghost" href="${ch2}" target="_blank" rel="noreferrer">${EXT}Channel</a>
+          <a class="cta ghost" href="#" data-sched-creator="${esc(m.creator_name)}">${CAL}Schedule</a>
+          <a class="cta ghost" href="#" data-outreach-creator="${esc(m.creator_name)}" data-outreach-topics="${esc(m.content_topics||"")}" data-outreach-titles="${esc((m.recent_videos||[]).slice(0,5).map(v=>v.title).join(", "))}" data-outreach-reasoning="${esc(m.reasoning||"")}">${MAIL}Outreach</a>
+          <a class="cta ghost" href="#" data-add-dossier="${esc(JSON.stringify({type:'creator', id:m.channel_id, name:m.creator_name, data:m}))}">${PLUS}Dossier</a>
         </div>
       </article>`;
     }).join("");
@@ -208,6 +211,7 @@ function renderBrandOpportunities(matches, creatorName, creatorBrief) {
       <div class="actions">
         <a class="primary" href="#" data-sched-brand="${esc(top.brand_name)}">${CAL}Schedule intro call</a>
         <a href="#" data-outreach-brand="${esc(top.brand_name)}" data-outreach-brief="${esc(top.campaign_brief||top.description||"")}">${MAIL}Draft outreach</a>
+        <a href="#" data-add-dossier="${esc(JSON.stringify({type:'brand', id:top.brand_name, name:top.brand_name, data:top}))}">${PLUS}Add to Dossier</a>
       </div>
     </article>`;
 
@@ -223,8 +227,9 @@ function renderBrandOpportunities(matches, creatorName, creatorBrief) {
         <p style="margin-top:8px;font-size:12.5px;color:var(--ink-2);font-style:italic;font-family:Newsreader,serif">${esc(m.why || "")}</p>
         <p style="margin-top:8px;font-size:12.5px;color:var(--muted)"><strong style="color:var(--accent-deep);font-family:'JetBrains Mono',monospace;text-transform:uppercase;font-size:10.5px;letter-spacing:.14em;font-weight:500">Pitch</strong> ${esc(m.pitch_angle || "")}</p>
         <div class="hero-actions" style="margin-top:14px">
-          <a class="a-ghost" href="#" data-sched-brand="${esc(m.brand_name)}">${CAL}Schedule</a>
-          <a class="a-ghost" href="#" data-outreach-brand="${esc(m.brand_name)}" data-outreach-brief="${esc(m.campaign_brief || m.description || "")}">${MAIL}Outreach</a>
+          <a class="cta ghost" href="#" data-sched-brand="${esc(m.brand_name)}">${CAL}Schedule</a>
+          <a class="cta ghost" href="#" data-outreach-brand="${esc(m.brand_name)}" data-outreach-brief="${esc(m.campaign_brief || m.description || "")}">${MAIL}Outreach</a>
+          <a class="cta ghost" href="#" data-add-dossier="${esc(JSON.stringify({type:'brand', id:m.brand_name, name:m.brand_name, data:m}))}">${PLUS}Dossier</a>
         </div>
       </article>`;
     }).join("");
@@ -782,7 +787,6 @@ document.getElementById("outreachModal").addEventListener("click", (e) => {
   if (e.target.id === "outreachModal") closeOutreach();
 });
 
-
 // Pipeline collapse/expand
 document.addEventListener("click", (e) => {
   const t = e.target.closest(".pipeline-toggle");
@@ -792,3 +796,187 @@ document.addEventListener("click", (e) => {
   article.classList.toggle("collapsed");
   t.setAttribute("aria-expanded", String(!article.classList.contains("collapsed")));
 });
+
+// ── Dossier & Session Management ──────────────────────────
+
+const Dossier = {
+    items: [],
+    sessionId: null,
+
+    init() {
+        this.sessionId = localStorage.getItem("sb_session_id");
+        if (!this.sessionId) {
+            this.sessionId = Math.random().toString(36).substring(2, 15);
+            localStorage.setItem("sb_session_id", this.sessionId);
+        }
+        
+        this.bindEvents();
+        this.fetch();
+    },
+
+    bindEvents() {
+        $("dossierBtn").addEventListener("click", () => this.toggle(true));
+        $("closeDossier").addEventListener("click", () => this.toggle(false));
+        $("drawerBackdrop").addEventListener("click", () => {
+            this.toggle(false);
+            this.toggleResult(false);
+        });
+        $("generatePromptBtn").addEventListener("click", () => this.generatePrompt());
+        $("closeResultPanel").addEventListener("click", () => this.toggleResult(false));
+        $("copyResultBtn").addEventListener("click", () => this.copyResult());
+
+        // Event delegation for adding/removing items
+        document.addEventListener("click", (e) => {
+            const addBtn = e.target.closest("[data-add-dossier]");
+            if (addBtn) {
+                e.preventDefault();
+                const item = JSON.parse(addBtn.dataset.addDossier);
+                this.add(item);
+            }
+
+            const removeBtn = e.target.closest(".remove-item");
+            if (removeBtn) {
+                e.preventDefault();
+                const { type, id } = removeBtn.dataset;
+                this.remove(type, id);
+            }
+        });
+    },
+
+    async fetch() {
+        try {
+            const r = await fetch(`/api/dossier?session_id=${this.sessionId}`);
+            const data = await r.json();
+            this.items = data.items || [];
+            this.render();
+        } catch (err) {
+            console.error("Failed to fetch dossier", err);
+        }
+    },
+
+    async add(item) {
+        // Prevent duplicates
+        if (this.items.some(i => i.type === item.type && i.id === item.id)) {
+            this.toggle(true);
+            return;
+        }
+
+        try {
+            await fetch("/api/dossier", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: this.sessionId,
+                    ...item
+                })
+            });
+            this.items.push(item);
+            this.render();
+            this.toggle(true);
+        } catch (err) {
+            console.error("Failed to add to dossier", err);
+        }
+    },
+
+    async remove(type, id) {
+        try {
+            await fetch("/api/dossier", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: this.sessionId,
+                    type,
+                    id
+                })
+            });
+            this.items = this.items.filter(i => !(i.type === type && i.id === id));
+            this.render();
+        } catch (err) {
+            console.error("Failed to remove from dossier", err);
+        }
+    },
+
+    toggle(show) {
+        $("dossierDrawer").classList.toggle("hidden", !show);
+        $("drawerBackdrop").classList.toggle("hidden", !show);
+        if (!show) this.toggleResult(false);
+    },
+
+    toggleResult(show) {
+        $("dossierResultPanel").classList.toggle("hidden", !show);
+    },
+
+    render() {
+        const list = $("dossierItems");
+        $("dossierCount").textContent = this.items.length;
+        
+        if (this.items.length === 0) {
+            list.innerHTML = `<div class="empty-dossier">Your dossier is empty. Add creators or brands to get started.</div>`;
+            return;
+        }
+
+        list.innerHTML = this.items.map(item => `
+            <div class="dossier-item">
+                <div class="item-info">
+                    <span class="item-type">${esc(item.type)}</span>
+                    <span class="item-name">${esc(item.name)}</span>
+                </div>
+                <button class="remove-item" data-type="${esc(item.type)}" data-id="${esc(item.id)}" title="Remove">&times;</button>
+            </div>
+        `).join("");
+    },
+
+    async generatePrompt() {
+        const input = $("customPromptInput");
+        const instruction = input.value.trim();
+        const btn = $("generatePromptBtn");
+        const resultDiv = $("promptResult");
+
+        if (!instruction) return;
+        if (this.items.length === 0) {
+            alert("Add some items to your dossier first.");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = "Generating...";
+        resultDiv.classList.add("hidden");
+
+        try {
+            const r = await fetch("/api/custom-prompt", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    session_id: this.sessionId,
+                    instruction
+                })
+            });
+            const data = await r.json();
+            if (data.error) throw new Error(data.error);
+
+            const html = renderMarkdown(data.result);
+            $("dossierResultText").innerHTML = html;
+            this.toggleResult(true);
+        } catch (err) {
+            alert("Generation failed: " + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = "Generate Prompt";
+        }
+    },
+
+    async copyResult() {
+        const txt = $("dossierResultText").innerText;
+        try {
+            await navigator.clipboard.writeText(txt);
+            const btn = $("copyResultBtn");
+            const orig = btn.textContent;
+            btn.textContent = "Copied!";
+            setTimeout(() => { btn.textContent = orig; }, 1200);
+        } catch (err) {
+            alert("Could not copy automatically.");
+        }
+    }
+};
+
+Dossier.init();
